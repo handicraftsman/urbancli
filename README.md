@@ -9,7 +9,12 @@ Type .quit or .exit or press Ctrl+D to exit
 
 UD> your term here
 
-================================================================
+... or ...
+
+$ urbancli your term here
+UrbanCLI by Nickolay Ilyushin (handicraftsman) <nickolay02@inbox.ru>
+
+... output ...
 
 Term: your term here
 Definition:
@@ -19,8 +24,6 @@ Example(s):
 Author: term author
 Score: downvotes | total score | upvotes
 Permalink: term permalink
-
-================================================================
 
 UD> .quit
 $ ...

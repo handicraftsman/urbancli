@@ -30,6 +30,7 @@ class Query {
 public:
   Query(std::string term);
 
+  std::string term;
   std::vector<Definition> definitions;
   
 private:

@@ -1,14 +1,14 @@
 #include "urbancli.hpp"
 
-Query::Query(std::string t) {
-  std::string term; 
+Query::Query(std::string _term) : term(_term) {
+  std::string t;
 
-  for (char c : t) {
-    if (c == ' ' || c == '\t' || c == '&') term += '-';
-    if (c == '\r' || c == '\n') term += '\0';
-    if (c >= '0') term += c;
+  for (char c : term) {
+    if (c == ' ' || c == '\t' || c == '&') t += '-';
+    if (c == '\r' || c == '\n') t += '\0';
+    if (c >= '0') t += c;
   }
-  const std::string url = "http://api.urbandictionary.com/v0/define?term=" + term;
+  const std::string url = "http://api.urbandictionary.com/v0/define?term=" + t;
 
   parse(send(url));
 }
@@ -74,11 +74,45 @@ void Query::parse(std::string json) {
   std::stable_sort(definitions.begin(), definitions.end(), [] (Definition d1, Definition d2) { return d1.score < d2.score; });
 }
 
-int main() {
+void printQuery(Query& query) {
+  std::cout << std::endl;
+
+  for (auto it = query.definitions.begin(); it != query.definitions.end(); ++it) {
+    Definition& def = *it;
+
+    std::cout << "\x1b[1mTerm:\x1b[0m " << query.term << std::endl;
+    std::cout << "\x1b[1mDefinition:\x1b[0m" << std::endl << "    " << def.definition << std::endl;
+    std::cout << "\x1b[1mExample(s):\x1b[0m" << std::endl << "    " << def.example << std::endl;
+    std::cout << "\x1b[1mAuthor:\x1b[0m " << def.author << std::endl;
+    std::cout << "\x1b[1mScore:\x1b[0m -" << def.thumbs_down << " | " << def.score << " | +" << def.thumbs_up << std::endl; 
+    std::cout << "\x1b[1mPermalink:\x1b[0m " << def.permalink << std::endl;
+
+    if (it != query.definitions.end() - 1) {
+      std::cout << std::endl << "================================================================" << std::endl << std::endl;
+    } else {
+      std::cout << std::endl;
+    }
+  }
+}
+
+int main(int argc, char** argv) {
   std::cin.unsetf(std::ios_base::skipws);
   curl_global_init(CURL_GLOBAL_ALL);
  
   std::cout << "UrbanCLI by Nickolay Ilyushin (handicraftsman) <nickolay02@inbox.ru>" << std::endl;
+  
+  if (argc > 1) {
+    std::string term;
+    for (int i = 1; i < argc; ++i) {
+      if (i != 1)
+        term.append(" ");
+      term.append(argv[i]);
+      Query query(term);
+      printQuery(query);
+    }
+    return 0;
+  }
+
   std::cout << "Type .quit or .exit or press Ctrl+D to exit" << std::endl << std::endl;
 
   for (;;) {
@@ -89,26 +123,9 @@ int main() {
     if (!std::getline(std::cin, term)) break;
     if (term == ".exit" || term == ".quit") break;
 
-    std::cout << std::endl;
-
     Query query(term);
-
-    for (auto it = query.definitions.begin(); it != query.definitions.end(); ++it) {
-      Definition& def = *it;
-
-      std::cout << "\x1b[1mTerm:\x1b[0m " << term << std::endl;
-      std::cout << "\x1b[1mDefinition:\x1b[0m" << std::endl << "    " << def.definition << std::endl;
-      std::cout << "\x1b[1mExample(s):\x1b[0m" << std::endl << "    " << def.example << std::endl;
-      std::cout << "\x1b[1mAuthor:\x1b[0m " << def.author << std::endl;
-      std::cout << "\x1b[1mScore:\x1b[0m -" << def.thumbs_down << " | " << def.score << " | +" << def.thumbs_up << std::endl; 
-      std::cout << "\x1b[1mPermalink:\x1b[0m " << def.permalink << std::endl;
-
-      if (it != query.definitions.end() - 1)
-        std::cout << std::endl << "================================================================" << std::endl << std::endl;
-    }
-
-    std::cout << std::endl;
+    printQuery(query);    
   }
 
-  exit(0);
+  return 0;
 }
